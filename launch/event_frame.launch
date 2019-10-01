@@ -1,0 +1,19 @@
+<launch>
+  <!-- rosbag player-->
+  <node pkg="rosbag" type="play" name="player" args="/media/juan/Disk1/juan/Dataset/uzg-rpg/events/EventCameraDataset/shapes_6dof.bag"/>
+
+  <!-- event visualization -->
+  <node name="eventFrame_node" pkg="dvs_data_tools" type="eventFrame_node" output="screen">
+    <remap from="events_topic" to="/dvs/events"/>
+    <remap from="events_frame" to="/dvs/events_frame"/>
+    <!--param name="visualization" value="2"/-->
+    <param name="visualization" value="time"/>
+    <param name="backgroundColor" value="black"/>
+    <param name="nEvents" value="200"/>
+    <param name="deltaTime" value="0.025"/>
+  </node>
+
+  <node name="image_view_events" pkg="image_view" type="image_view">
+  	<remap from="image" to="/dvs/events_frame"/>
+  </node>
+</launch>
