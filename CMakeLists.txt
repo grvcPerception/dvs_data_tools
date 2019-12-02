@@ -52,6 +52,8 @@ add_library(eventDataTools
 )
 
 add_executable(eventFrame_node src/dvs_events2frames_node.cpp)
+add_executable(stereoTest_node src/stereo_test.cpp)
 
 target_link_libraries(eventDataTools ${catkin_LIBRARIES} ${OpenCV_LIBS} ${OpenCV_LIBRARIES})
 target_link_libraries(eventFrame_node eventDataTools ${catkin_LIBRARIES} ${OpenCV_LIBS} ${OpenCV_LIBRARIES})
+target_link_libraries(stereoTest_node eventDataTools ${catkin_LIBRARIES} ${OpenCV_LIBS} ${OpenCV_LIBRARIES})

@@ -1,0 +1,20 @@
+<launch>
+  <!-- rosbag player-->
+  <node name="davis_ros_driver" pkg="davis_ros_driver" type="davis_ros_driver" output="screen">
+    <param name="serial_number" type="str" value="00000127" />
+  </node>
+  <!-- event visualization -->
+  <node name="eventFrame_node" pkg="dvs_data_tools" type="eventFrame_node" output="screen">
+    <remap from="events_topic" to="/dvs/events"/>
+    <remap from="events_frame" to="/dvs/events_frame"/>
+    <!--param name="visualization" value="2"/-->
+    <param name="visualization" value="time"/>
+    <param name="backgroundColor" value="black"/>
+    <param name="nEvents" value="200"/>
+    <param name="deltaTime" value="0.025"/>
+  </node>
+
+  <!--node name="image_view_events" pkg="image_view" type="image_view">
+  	<remap from="image" to="/dvs/events_frame"/>
+  </node-->
+</launch>

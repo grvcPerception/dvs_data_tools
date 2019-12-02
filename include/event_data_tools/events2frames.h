@@ -19,7 +19,7 @@
 
 class Events2Frames{    
     private:
-     ros::NodeHandle nh_;
+    ros::NodeHandle nh_;
     image_transport::Publisher eventFramePub_;
     sensor_msgs::ImagePtr eventFramePub_msg_;
     int sensorWidth_ = 346;
