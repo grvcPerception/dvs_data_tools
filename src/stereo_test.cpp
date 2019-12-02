@@ -51,33 +51,39 @@ void callSync(){
         
         double boh = eventLeft[1][1].ts.toSec(); 
         eLeft = eventLeft[1][1]; 
-        //std::vector <dvs_msgs::Event> vecLeft = eventLeft[kk];
-        for (int kk = 0; kk<eventRight.size(); kk++){
-            //std::vector <dvs_msgs::Event> vecLeft = eventLeft[kk];
-            std::vector <dvs_msgs::Event> vecRight = eventRight[kk];
+        for(int jj = 0; jj<eventRight.size(); jj++){
+            std::vector <dvs_msgs::Event> vecLeft = eventLeft[jj];
+            for(int ll =0; ll<vecLeft.size(); ll++){
+                //std::vector <dvs_msgs::Event> vecLeft = eventLeft[kk];
+                for (int kk = 0; kk<eventRight.size(); kk++){
+                    //std::vector <dvs_msgs::Event> vecLeft = eventLeft[kk];
+                    std::vector <dvs_msgs::Event> vecRight = eventRight[kk];
 
-            // std::cout<<"LEFT"<<std::endl;
-            // for(int ii = 0; ii<vecLeft.size(); ii++)
-            //     std::cout<<"event Left : "<<vecLeft[ii].ts.toSec()-tZero<<std::endl;
-            //std::cout<<"RIGHT"<<std::endl;
-            for(int ii = 0; ii<vecRight.size(); ii++){
-                double aux = vecRight[ii].ts.toSec()-boh;
-                //std::cout<<"event Right : "<<aux<<std::endl;
-                if(aux <= 0.0003 && aux>= -0.0003){
-                    std::cout<<" Found "<<std::endl;
-                    std::cout<<"event Right : "<<aux<<std::endl;
-                    eRight = vecRight[ii]; 
+                    // std::cout<<"LEFT"<<std::endl;
+                    // for(int ii = 0; ii<vecLeft.size(); ii++)
+                    //     std::cout<<"event Left : "<<vecLeft[ii].ts.toSec()-tZero<<std::endl;
+                    //std::cout<<"RIGHT"<<std::endl;
+                    for(int ii = 0; ii<vecRight.size(); ii++){
+                        if(vecRight[ii].ts.toSec()-vecLeft[ll].ts.toSec() <= 0.00005 && vecRight[ii].ts.toSec()-vecLeft[ll].ts.toSec()>= -0.00005)
+                            std::cout<<"Data Association"<<std::endl;
+                        //double aux = vecRight[ii].ts.toSec()-boh;
+                        //std::cout<<"event Right : "<<aux<<std::endl;
+                        // if(aux <= 0.0003 && aux>= -0.0003){
+                        //     std::cout<<" Found "<<std::endl;
+                        //     std::cout<<"event Right : "<<aux<<std::endl;
+                        //     eRight = vecRight[ii]; 
+                        // }
+
+                    } 
                 }
-
-            } 
+            }
         }
-
-        cv::circle(imageRight[0],cv::Point(eRight.x, eRight.y), 5, cv::Scalar(0,255,0), -1);
-        //imageRight[0].at<cv::Vec3b>(cv::Point(eRight.x, eRight.y)) = cv::Vec3b(255,0,0);
-        cv::imwrite("/home/juan/Right.png",imageRight[0]);
-        cv::circle(imageLeft[0],cv::Point(eLeft.x, eLeft.y), 5, cv::Scalar(0,255,0), -1);
-        //imageLeft[0].at<cv::Vec3b>(cv::Point(eLeft.x, eLeft.y)) = cv::Vec3b(0,255,255);
-        cv::imwrite("/home/juan/Left.png",imageLeft[0]);
+        // cv::circle(imageRight[0],cv::Point(eRight.x, eRight.y), 5, cv::Scalar(0,255,0), -1);
+        // //imageRight[0].at<cv::Vec3b>(cv::Point(eRight.x, eRight.y)) = cv::Vec3b(255,0,0);
+        // cv::imwrite("/home/juan/Right.png",imageRight[0]);
+        // cv::circle(imageLeft[0],cv::Point(eLeft.x, eLeft.y), 5, cv::Scalar(0,255,0), -1);
+        // //imageLeft[0].at<cv::Vec3b>(cv::Point(eLeft.x, eLeft.y)) = cv::Vec3b(0,255,255);
+        // cv::imwrite("/home/juan/Left.png",imageLeft[0]);
     }
     counter++;
 
