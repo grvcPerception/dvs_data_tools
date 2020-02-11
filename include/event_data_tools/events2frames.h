@@ -22,16 +22,19 @@ class Events2Frames{
     ros::NodeHandle nh_;
     image_transport::Publisher eventFramePub_;
     sensor_msgs::ImagePtr eventFramePub_msg_;
+    dvs_msgs::EventArray eventPub_msg_;
+
     int sensorWidth_ = 346;
     int sensorHeight_ = 260;
     double timeStart_,timeStartEvent_;
     cv::Mat eventFrame_;
     ros::Subscriber event_sub_;
+    ros::Publisher eventPub_;
 
     // Default values
     std::string visualizationType_ = "default";
     std::string bColor_ = "black";
-    int nEvents_ = 200;
+    int nEventsFrame_ = 200, nEvents_ = 200, frameIdEvents_ = 0;
     double deltaTime_ = 0.1;
     
     // Fixed parameters
@@ -39,6 +42,7 @@ class Events2Frames{
     int events_counter_ = 0;
 
     void publishEventImage();
+    void publishEventSet(int height, int width);
     void initParameters(int width, int height, double time, double timeEvent);
     void eventCallback(const dvs_msgs::EventArray::ConstPtr &event_msg);
 
@@ -47,6 +51,8 @@ class Events2Frames{
     std::map<std::string,visualization> visualizationTypeVec_;
     std::map<std::string,bColorList> bColorListVec_;
     void loadDefinitions();
+
+    std::vector<dvs_msgs::Event> eventBuffer_;
 
     public:
     Events2Frames(ros::NodeHandle & nh, ros::NodeHandle nh_private);

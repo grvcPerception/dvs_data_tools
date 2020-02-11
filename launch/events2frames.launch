@@ -6,10 +6,11 @@
   <node name="eventFrame_node" pkg="dvs_data_tools" type="eventFrame_node" output="screen">
     <remap from="events_topic" to="/dvs/events"/>
     <remap from="events_frame" to="/dvs/events_frame"/>
+    <remap from="events" to="/dvs/events_hf"/>
     <!--param name="visualization" value="2"/-->
     <param name="visualization" value="experimental"/>
     <param name="backgroundColor" value="white"/>
-    <param name="nEvents" value="2000"/>
+    <param name="nEventsFrame" value="2000"/>
     <param name="deltaTime" value="0.01"/>
   </node>
 

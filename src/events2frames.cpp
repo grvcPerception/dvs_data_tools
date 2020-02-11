@@ -2,6 +2,7 @@
 
 Events2Frames::Events2Frames(ros::NodeHandle & nh, ros::NodeHandle nh_private): nh_(nh){
     nh_private.getParam("visualization", visualizationType_); 
+    nh_private.getParam("nEventsFrame", nEventsFrame_); 
     nh_private.getParam("nEvents", nEvents_); 
     nh_private.getParam("backgroundColor", bColor_);
     nh_private.getParam("deltaTime", deltaTime_); 
@@ -13,6 +14,7 @@ Events2Frames::Events2Frames(ros::NodeHandle & nh, ros::NodeHandle nh_private): 
     // Publishers
     image_transport::ImageTransport it(nh_);
     eventFramePub_ = it.advertise("events_frame", 1);
+    eventPub_ = nh_.advertise<dvs_msgs::EventArray>("events", 1, true);
 }
 
 Events2Frames::~Events2Frames(){}
@@ -23,6 +25,20 @@ void Events2Frames::publishEventImage(){
     eventFrame_ = cv::Mat::zeros(sensorHeight_,sensorWidth_, CV_8UC3);
     if (bColorListVec_[bColor_]==WHITE)
         eventFrame_ = cv::Scalar(255, 255, 255);
+}
+
+void Events2Frames::publishEventSet(int height, int width){
+    eventPub_msg_.header.stamp = ros::Time::now();
+    eventPub_msg_.header.frame_id = frameIdEvents_;
+    eventPub_msg_.height =  height;
+    eventPub_msg_.width = width;
+    eventPub_msg_.events = eventBuffer_;
+
+    eventPub_.publish(eventPub_msg_);
+
+    eventBuffer_.clear();
+    frameIdEvents_++;
+
 }
 
 void Events2Frames::loadDefinitions(){
@@ -58,7 +74,9 @@ void Events2Frames::eventCallback(const dvs_msgs::EventArray::ConstPtr &event_ms
            
     for (int ii = 0; ii<event_msg->events.size(); ++ii){
     //for (const auto& e : event_msg->events) {
-      
+        //Add the vent into the buffer;
+        eventBuffer_.push_back(event_msg->events[ii]);
+
         if(event_msg->events[ii].polarity)
             eventFrame_.at<cv::Vec3b>(cv::Point(event_msg->events[ii].x,event_msg->events[ii].y))=cv::Vec3b(0,0,255);
         else
@@ -69,22 +87,25 @@ void Events2Frames::eventCallback(const dvs_msgs::EventArray::ConstPtr &event_ms
                 case DEFAULT :
                     if (ii == n_event-1){
                         publishEventImage();
+                        publishEventSet(event_msg->height, event_msg->width);
                     }
                     break;
                 case NUMBEROFEVENTS :
-                    if (events_counter_ >= nEvents_){
+                    if (events_counter_ >= nEventsFrame_){
                         events_counter_ = 0;
                         publishEventImage();
                     }
                     else
                         events_counter_++;
+                    if (eventBuffer_.size() > nEvents_-1)
+                        publishEventSet(event_msg->height, event_msg->width);
                     break;
                 case TIME :
                     currentTime = ros::Time::now().toSec()-timeStart_;
                     if(currentTime >= deltaTime_){
                         timeStart_ = ros::Time::now().toSec();
                         publishEventImage();
-                  
+                        publishEventSet(event_msg->height, event_msg->width);
                     }
                     break;
                 case EXPERIMENTAL :
@@ -92,6 +113,7 @@ void Events2Frames::eventCallback(const dvs_msgs::EventArray::ConstPtr &event_ms
                     if(currentTime >= deltaTime_){
                         timeStartEvent_ = event_msg->events[ii].ts.toSec();
                         publishEventImage();
+                        publishEventSet(event_msg->height, event_msg->width);
                     }
                     break;
         }

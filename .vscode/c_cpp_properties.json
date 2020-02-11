@@ -1,0 +1,39 @@
+{
+    "configurations": [
+        {
+            "browse": {
+                "databaseFilename": "",
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "includePath": [
+                "/home/juan/catkin_ws/devel/include",
+                "/opt/ros/kinetic/include",
+                "/home/juan/catkin_ws/src/uzh-rpg/rpg_corner_events/corner_event_detector/include",
+                "/home/juan/catkin_ws/src/darknet_ros/darknet_ros/include",
+                "/home/juan/catkin_ws/src/uzh-rpg/rpg_dvs_ros/davis_ros_driver/include",
+                "/home/juan/catkin_ws/src/uzh-rpg/rpg_dvs_ros/dvs_calibration/include",
+                "/home/juan/catkin_ws/src/uzh-rpg/rpg_dvs_ros/dvs_renderer/include",
+                "/home/juan/catkin_ws/src/uzh-rpg/rpg_dvs_ros/dvs_ros_driver/include",
+                "/home/juan/catkin_ws/src/event_data_tools/include",
+                "/home/juan/catkin_ws/src/events/events_tracker/include",
+                "/home/juan/catkin_ws/src/gazebo_dvs_plugin/include",
+                "/home/juan/catkin_ws/src/juan/gazebo_follow_trajectory/include",
+                "/home/juan/catkin_ws/src/gazebo_ros_pkgs/gazebo_plugins/include",
+                "/home/juan/catkin_ws/src/gazebo_ros_pkgs/gazebo_ros/include",
+                "/home/juan/catkin_ws/src/gazebo_ros_pkgs/gazebo_ros_control/include",
+                "/home/juan/catkin_ws/src/grvc_evision/include",
+                "/home/juan/catkin_ws/src/events/save_events_data/include",
+                "/home/juan/catkin_ws/src/juan/save_topic_data/include",
+                "/home/juan/catkin_ws/src/tau_guidance_pkg/include",
+                "/home/juan/catkin_ws/src/ros-simulation/gazebo_models/velodyne_simulator/velodyne_gazebo_plugins/include",
+                "/usr/include"
+            ],
+            "name": "Linux",
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "/usr/bin/clang-3.8",
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}
