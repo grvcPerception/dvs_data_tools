@@ -29,7 +29,7 @@ void Events2Frames::publishEventImage(){
 
 void Events2Frames::publishEventSet(int height, int width){
     eventPub_msg_.header.stamp = ros::Time::now();
-    eventPub_msg_.header.frame_id = frameIdEvents_;
+    eventPub_msg_.header.frame_id = std::to_string(frameIdEvents_);
     eventPub_msg_.height =  height;
     eventPub_msg_.width = width;
     eventPub_msg_.events = eventBuffer_;
