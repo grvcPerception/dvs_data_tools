@@ -27,14 +27,15 @@ class Events2Frames{
     int sensorWidth_ = 346;
     int sensorHeight_ = 260;
     double timeStart_,timeStartEvent_;
-    cv::Mat eventFrame_;
+    cv::Mat eventFrame_, on_events_, off_events_;
     ros::Subscriber event_sub_;
     ros::Publisher eventPub_;
 
     // Default values
-    std::string visualizationType_ = "default";
+    std::string visualizationType_ = "batch";
     std::string bColor_ = "black";
-    int nEventsFrame_ = 200, nEvents_ = 200, frameIdEvents_ = 0;
+    std::string displayType_ = "red-blue";
+    int nEventsFrame_ = 2000, nEvents_ = 400, frameIdEvents_ = 0;
     double deltaTime_ = 0.1;
     
     // Fixed parameters
@@ -46,10 +47,12 @@ class Events2Frames{
     void initParameters(int width, int height, double time, double timeEvent);
     void eventCallback(const dvs_msgs::EventArray::ConstPtr &event_msg);
 
-    enum visualization {DEFAULT = 0, NUMBEROFEVENTS = 1, TIME = 2, EXPERIMENTAL = 3};
+    enum visualization {BATCH = 0, NUMBEROFEVENTS = 1, TIME = 2, EXPERIMENTAL = 3};
     enum bColorList {BLACK = 0, WHITE = 1};
+    enum displayType {GRAYSCALE = 0, BLACK_WHITE_NON_POLARITY = 1, RED_BLUE = 2};
     std::map<std::string,visualization> visualizationTypeVec_;
     std::map<std::string,bColorList> bColorListVec_;
+    std::map<std::string,displayType> displayTypeVec_;
     void loadDefinitions();
 
     std::vector<dvs_msgs::Event> eventBuffer_;
