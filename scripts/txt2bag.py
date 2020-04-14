@@ -54,13 +54,21 @@ def image2imMsg(im_ , time, format):
 def main():
     rospy.init_node('events_txt2bag_node')
 
-    # video frame_rate
-    leading_zeros_ = 8
-    video_rate = 30
+    # leading_zeros_ = 8
+    # video_rate = 30
+    # path_to_events_ = "/home/juan/Github/rpg_vid2e/esim_py/juan/data/images/runing/events.txt"
+    # path_to_image_timestamps_ = "/home/juan/Github/rpg_vid2e/esim_py/juan/data/images/runing/timestamps.txt"
+    # path_to_images_ = "/home/juan/Github/rpg_vid2e/esim_py/juan/data/images/runing/imgs/"
+
+    path_to_events_ = rospy.get_param("~path_to_events")
+    path_to_image_timestamps_ = rospy.get_param("~path_to_image_timestamps")
+    path_to_images_ = rospy.get_param("~path_to_images")
+    path_to_save_bag_ = rospy.get_param("~path_to_save_bag")
+    leading_zeros_ = rospy.get_param("~leading_zeros")
+    video_rate = rospy.get_param("~video_rate")
+
     video_t = 1.0/video_rate
-    path_to_events_ = "/home/juan/Github/rpg_vid2e/esim_py/juan/data/images/runing/events2.txt"
-    path_to_image_timestamps_ = "/home/juan/Github/rpg_vid2e/esim_py/juan/data/images/runing/timestamps.txt"
-    path_to_images_ = "/home/juan/Github/rpg_vid2e/esim_py/juan/data/images/runing/imgs2/"
+    
     events = genfromtxt(path_to_events_, delimiter=',')
     hf_image_timestamps = genfromtxt(path_to_image_timestamps_, delimiter=',')
 
@@ -72,7 +80,6 @@ def main():
     t_base = time_now_ros.to_sec()
 
     # print(t_base)
-
     # print(len(hf_image_timestamps))
     # print(image_total_time)
     # print(n_images_to_publish)
@@ -80,9 +87,12 @@ def main():
 
     date_time = time.gmtime()
     date_id = str(date_time.tm_year)+"-"+str(date_time.tm_mon)+"-"+str(date_time.tm_mday)+"_"+str(date_time.tm_hour)+"_"+str(date_time.tm_min)+"_"+str(date_time.tm_sec)
-    path_to_save_bag = os.path.abspath(os.getcwd())
 
-    bag = rosbag.Bag(path_to_save_bag+'/'+date_id+'.bag', 'w')
+    #path_to_save_bag_ = os.path.abspath(os.getcwd())
+    #bag = rosbag.Bag(path_to_save_bag_+'/'+date_id+'.bag', 'w')
+    
+    bag = rosbag.Bag(path_to_save_bag_+date_id+'.bag', 'w')
+    print("Bag will be safed as : "+path_to_save_bag_+date_id+".bag")
 
     image_index = 0
     index_reference = 0
@@ -90,8 +100,6 @@ def main():
     height = 352
 
     for ii in range(0, n_images_to_publish):
-        #print("We're on time %d" % (image_index))
-        #print(t_base+hf_image_timestamps[image_index])
         # Prepare the timestamp for the bag
         t = rospy.Time(t_base+hf_image_timestamps[image_index])
 
