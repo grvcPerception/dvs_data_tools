@@ -100,24 +100,25 @@ def main():
     height = 352
 
     for ii in range(0, n_images_to_publish):
-        # Prepare the timestamp for the bag
-        t = rospy.Time(t_base+hf_image_timestamps[image_index])
+        if image_index<len(hf_image_timestamps):
+            # Prepare the timestamp for the bag
+            t = rospy.Time(t_base+hf_image_timestamps[image_index])
 
-        events_msg, index_reference = getEventsMsg(events, width, height, t_base, index_reference, hf_image_timestamps[image_index], t)
-        # add event message to bag file
-        bag.write('dvs/events', events_msg, t)
-     
-        # Read image
-        im_ = cv2.imread(path_to_images_+str(image_index).zfill(leading_zeros_)+".png") 
-        #cv2.imshow("images", im_)
-        #cv2.waitKey(video_rate)
+            events_msg, index_reference = getEventsMsg(events, width, height, t_base, index_reference, hf_image_timestamps[image_index], t)
+            # add event message to bag file
+            bag.write('dvs/events', events_msg, t)
         
-        # Convert image to ros image msgs
-        im_msg =  image2imMsg(im_ , t, "bgr8")
-        # add  image message to bag file
-        bag.write('dvs/image_raw', im_msg, t)
+            # Read image
+            im_ = cv2.imread(path_to_images_+str(image_index).zfill(leading_zeros_)+".png") 
+            # cv2.imshow("images", im_)
+            # cv2.waitKey(video_rate)
+            
+            # Convert image to ros image msgs
+            im_msg =  image2imMsg(im_ , t, "bgr8")
+            # add  image message to bag file
+            bag.write('dvs/image_raw', im_msg, t)
 
-        image_index += 8
+            image_index += 8
         
     bag.close()
 

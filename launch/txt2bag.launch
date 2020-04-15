@@ -1,10 +1,10 @@
 <launch>
 
   <node pkg="dvs_data_tools" name="events_txt2bag_node" type="txt2bag.py" output="screen"> 
-    <param name="path_to_events" value="/home/juan/Github/rpg_vid2e/esim_py/juan/data/images/runing/events.txt"/>
-    <param name="path_to_image_timestamps" value="/home/juan/Github/rpg_vid2e/esim_py/juan/data/images/runing/timestamps.txt"/>
-    <param name="path_to_images" value="/home/juan/Github/rpg_vid2e/esim_py/juan/data/images/runing/imgs/"/>
-    <param name="path_to_save_bag" value="/home/juan/"/>
+    <param name="path_to_events" value="/home/juan/Github/forked/rpg_vid2e/esim_py/tests/data1/images/events.txt"/>
+    <param name="path_to_image_timestamps" value="/home/juan/Github/forked/rpg_vid2e/esim_py/tests/data1/images/timestamps.txt"/>
+    <param name="path_to_images" value="/home/juan/Github/forked/rpg_vid2e/esim_py/tests/data1/images/imgs/"/>
+    <param name="path_to_save_bag" value="/home/juan/Github/forked/rpg_vid2e/esim_py/tests/data1/"/>
     <param name="leading_zeros" value="8"/>
     <param name="video_rate" value="30"/>
   </node>
