@@ -66,6 +66,8 @@ def main():
     path_to_save_bag_ = rospy.get_param("~path_to_save_bag")
     leading_zeros_ = rospy.get_param("~leading_zeros")
     video_rate = rospy.get_param("~video_rate")
+    width = rospy.get_param("~image_width")
+    height = rospy.get_param("~image_height")
 
     video_t = 1.0/video_rate
     
@@ -79,11 +81,11 @@ def main():
     time_now_ros = rospy.get_rostime()
     t_base = time_now_ros.to_sec()
 
-    # print(t_base)
-    # print(len(hf_image_timestamps))
-    # print(image_total_time)
-    # print(n_images_to_publish)
-    # print(image_step)
+    print(t_base)
+    print(len(hf_image_timestamps))
+    print(image_total_time)
+    print(n_images_to_publish)
+    print(image_step)
 
     date_time = time.gmtime()
     date_id = str(date_time.tm_year)+"-"+str(date_time.tm_mon)+"-"+str(date_time.tm_mday)+"_"+str(date_time.tm_hour)+"_"+str(date_time.tm_min)+"_"+str(date_time.tm_sec)
@@ -96,8 +98,7 @@ def main():
 
     image_index = 0
     index_reference = 0
-    width = 640
-    height = 352
+    
 
     for ii in range(0, n_images_to_publish):
         if image_index<len(hf_image_timestamps):
@@ -118,7 +119,7 @@ def main():
             # add  image message to bag file
             bag.write('dvs/image_raw', im_msg, t)
 
-            image_index += 8
+            image_index += image_step
         
     bag.close()
 
