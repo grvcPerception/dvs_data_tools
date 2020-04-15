@@ -81,11 +81,11 @@ def main():
     time_now_ros = rospy.get_rostime()
     t_base = time_now_ros.to_sec()
 
-    print(t_base)
-    print(len(hf_image_timestamps))
-    print(image_total_time)
-    print(n_images_to_publish)
-    print(image_step)
+    # print(t_base)
+    # print(len(hf_image_timestamps))
+    # print(image_total_time)
+    # print(n_images_to_publish)
+    # print(image_step)
 
     date_time = time.gmtime()
     date_id = str(date_time.tm_year)+"-"+str(date_time.tm_mon)+"-"+str(date_time.tm_mday)+"_"+str(date_time.tm_hour)+"_"+str(date_time.tm_min)+"_"+str(date_time.tm_sec)
