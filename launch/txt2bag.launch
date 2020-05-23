@@ -1,14 +1,12 @@
 <launch>
 
   <node pkg="dvs_data_tools" name="events_txt2bag_node" type="txt2bag.py" output="screen"> 
-    <param name="path_to_events" value="/media/juan/Disk1/juan/Dataset/GRVC/events/vid2e/2020-04-15-HR/images/events.txt"/>
-    <param name="path_to_image_timestamps" value="/media/juan/Disk1/juan/Dataset/GRVC/events/vid2e/2020-04-15-HR/images/timestamps.txt"/>
-    <param name="path_to_images" value="/media/juan/Disk1/juan/Dataset/GRVC/events/vid2e/2020-04-15-HR/images/imgs/"/>
-    <param name="path_to_save_bag" value="/media/juan/Disk1/juan/Dataset/GRVC/events/vid2e/2020-04-15-HR/"/>
+    <param name="path_to_events" value="/media/juan/Disk1/juan/Dataset/GRVC/events/vid2e/2020-05-22-Miguel/imgs/events.txt"/>
+    <param name="path_to_image_timestamps" value="/media/juan/Disk1/juan/Dataset/GRVC/events/vid2e/2020-05-22-Miguel/imgs/timestamps.txt"/>
+    <param name="path_to_images" value="/media/juan/Disk1/juan/Dataset/GRVC/events/vid2e/2020-05-22-Miguel/imgs/imgs/"/>
+    <param name="path_to_save_bag" value="/media/juan/Disk1/juan/Dataset/GRVC/events/vid2e/2020-05-22-Miguel/"/>
     <param name="leading_zeros" value="8"/>
-    <param name="video_rate" value="30"/>
-    <param name="image_width" value="1920"/>
-    <param name="image_height" value="1056"/>
+    <param name="video_rate" value="23"/>
   </node>
   
 </launch>

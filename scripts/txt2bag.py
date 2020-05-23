@@ -14,10 +14,8 @@ from dvs_msgs.msg import Event
 #sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2
 
-def getEventsMsg(events, width, height, tZero, index_reference, time_reference, t_ROS):
+def getEventsMsg(events, width, height, tZero, index_reference, time_reference):
     msg = EventArray()
-    msg.header.frame_id = "vide2e"
-    msg.header.stamp = t_ROS
     msg.width = width
     msg.height = height
 
@@ -37,18 +35,37 @@ def getEventsMsg(events, width, height, tZero, index_reference, time_reference, 
             index+=1
             msg.events.append(e)
 
+    msg.header.frame_id = ""
+    msg.header.seq = getEventsMsg.counter
+    if len(msg.events) > 0:
+        msg.header.stamp = msg.events[-1].ts
+        getEventsMsg.counter += 1
+
     return msg, index
 
-def image2imMsg(im_ , time, format):
-    im_msg  = CvBridge().cv2_to_imgmsg(im_,format)
-    im_msg.header.frame_id = "vide2e"
-    im_msg.header.stamp = time
+getEventsMsg.counter = 0
+
+def image2imMsg(im_ , time):
+    if(im_.shape[2]>1):
+        im_msg = CvBridge().cv2_to_imgmsg(cv2.cvtColor(im_, cv2.COLOR_BGR2GRAY),"mono8")
+    else:
+        im_msg = CvBridge().cv2_to_imgmsg(im_,"mono8")
+        
+
     im_msg.height = im_.shape[0] 
     im_msg.width = im_.shape[1]
-    im_msg.step = im_.shape[1]*im_.shape[2]
-    im_msg.encoding = "bgr8"
+    im_msg.is_bigendian = 0
+    im_msg.encoding = "mono8"
+    im_msg.step = im_.shape[1]
+    
+    im_msg.header.frame_id = ""
+    im_msg.header.stamp = time
+    im_msg.header.seq = image2imMsg.counter
 
+    image2imMsg.counter += 1
     return im_msg
+
+image2imMsg.counter = 0
 
 
 def main():
@@ -66,8 +83,6 @@ def main():
     path_to_save_bag_ = rospy.get_param("~path_to_save_bag")
     leading_zeros_ = rospy.get_param("~leading_zeros")
     video_rate = rospy.get_param("~video_rate")
-    width = rospy.get_param("~image_width")
-    height = rospy.get_param("~image_height")
 
     video_t = 1.0/video_rate
     
@@ -87,6 +102,9 @@ def main():
     # print(n_images_to_publish)
     # print(image_step)
 
+    # loading image parameters
+    img = cv2.imread(path_to_images_+str(0).zfill(leading_zeros_)+".png") 
+   
     date_time = time.gmtime()
     date_id = str(date_time.tm_year)+"-"+str(date_time.tm_mon)+"-"+str(date_time.tm_mday)+"_"+str(date_time.tm_hour)+"_"+str(date_time.tm_min)+"_"+str(date_time.tm_sec)
 
@@ -98,27 +116,31 @@ def main():
 
     image_index = 0
     index_reference = 0
-    
 
     for ii in range(0, n_images_to_publish):
         if image_index<len(hf_image_timestamps):
             # Prepare the timestamp for the bag
             t = rospy.Time(t_base+hf_image_timestamps[image_index])
-
-            events_msg, index_reference = getEventsMsg(events, width, height, t_base, index_reference, hf_image_timestamps[image_index], t)
-            # add event message to bag file
-            bag.write('dvs/events', events_msg, t)
-        
             # Read image
             im_ = cv2.imread(path_to_images_+str(image_index).zfill(leading_zeros_)+".png") 
             # cv2.imshow("images", im_)
             # cv2.waitKey(video_rate)
             
             # Convert image to ros image msgs
-            im_msg =  image2imMsg(im_ , t, "bgr8")
+            im_msg =  image2imMsg(im_ , t)
             # add  image message to bag file
             bag.write('dvs/image_raw', im_msg, t)
 
+            height, width, channels = im_.shape 
+            # Publish events only if they were triggered before the image
+            if (hf_image_timestamps[image_index]>=events[0][0]):
+                events_msg, index_reference = getEventsMsg(events, width, height, t_base, index_reference, hf_image_timestamps[image_index])
+                # Only if the message has at least one event
+                if len(events_msg.events)>0:
+                    t_last_event = events_msg.events[-1].ts
+                    # add event message to bag file
+                    bag.write('dvs/events', events_msg, t_last_event)
+        
             image_index += image_step
         
     bag.close()
