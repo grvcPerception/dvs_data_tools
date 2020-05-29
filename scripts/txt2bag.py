@@ -83,6 +83,7 @@ def main():
     path_to_save_bag_ = rospy.get_param("~path_to_save_bag")
     leading_zeros_ = rospy.get_param("~leading_zeros")
     video_rate = rospy.get_param("~video_rate")
+    n_images_in_folder = rospy.get_param("~n_images_in_folder")
 
     video_t = 1.0/video_rate
     
@@ -117,12 +118,14 @@ def main():
     image_index = 0
     index_reference = 0
 
-    for ii in range(0, n_images_to_publish):
-        if image_index<len(hf_image_timestamps):
-            # Prepare the timestamp for the bag
-            t = rospy.Time(t_base+hf_image_timestamps[image_index])
+    # Step counter
+    next_step = video_t
+
+    for ii in range(0, n_images_in_folder):
+        if hf_image_timestamps[ii] > next_step:
+            t = rospy.Time(t_base+hf_image_timestamps[ii])
             # Read image
-            im_ = cv2.imread(path_to_images_+str(image_index).zfill(leading_zeros_)+".png") 
+            im_ = cv2.imread(path_to_images_+str(ii).zfill(leading_zeros_)+".png") 
             # cv2.imshow("images", im_)
             # cv2.waitKey(video_rate)
             
@@ -133,17 +136,47 @@ def main():
 
             height, width, channels = im_.shape 
             # Publish events only if they were triggered before the image
-            if (hf_image_timestamps[image_index]>=events[0][0]):
-                events_msg, index_reference = getEventsMsg(events, width, height, t_base, index_reference, hf_image_timestamps[image_index])
+            if (hf_image_timestamps[ii]>=events[0][0]):
+                events_msg, index_reference = getEventsMsg(events, width, height, t_base, index_reference, hf_image_timestamps[ii])
                 # Only if the message has at least one event
                 if len(events_msg.events)>0:
                     t_last_event = events_msg.events[-1].ts
                     # add event message to bag file
                     bag.write('dvs/events', events_msg, t_last_event)
         
-            image_index += image_step
-        
+            #image_index += image_step
+
+            next_step += video_t
+
     bag.close()
+
+    # for ii in range(0, n_images_to_publish):
+    #     if image_index<len(hf_image_timestamps):
+    #         # Prepare the timestamp for the bag
+    #         t = rospy.Time(t_base+hf_image_timestamps[image_index])
+    #         # Read image
+    #         im_ = cv2.imread(path_to_images_+str(image_index).zfill(leading_zeros_)+".png") 
+    #         # cv2.imshow("images", im_)
+    #         # cv2.waitKey(video_rate)
+            
+    #         # Convert image to ros image msgs
+    #         im_msg =  image2imMsg(im_ , t)
+    #         # add  image message to bag file
+    #         bag.write('dvs/image_raw', im_msg, t)
+
+    #         height, width, channels = im_.shape 
+    #         # Publish events only if they were triggered before the image
+    #         if (hf_image_timestamps[image_index]>=events[0][0]):
+    #             events_msg, index_reference = getEventsMsg(events, width, height, t_base, index_reference, hf_image_timestamps[image_index])
+    #             # Only if the message has at least one event
+    #             if len(events_msg.events)>0:
+    #                 t_last_event = events_msg.events[-1].ts
+    #                 # add event message to bag file
+    #                 bag.write('dvs/events', events_msg, t_last_event)
+        
+    #         image_index += image_step
+        
+    # bag.close()
 
 if __name__ == "__main__":
     main() 
