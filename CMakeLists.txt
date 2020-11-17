@@ -49,6 +49,7 @@ include_directories(
 ## Declare a C++ library
 add_library(eventDataTools
   src/events2frames.cpp
+  src/utils.cpp
 )
 
 add_executable(eventFrame_node src/dvs_events2frames_node.cpp)

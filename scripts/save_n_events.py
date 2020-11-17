@@ -40,7 +40,7 @@ def EventsCallback(msg):
 
 EventsCallback.tZero = 0
 EventsCallback.eventCounter = 0
-EventsCallback.timeStep = 0.05
+EventsCallback.timeStep = 0.025
 EventsCallback.stepCounter = 1
 EventsCallback.msgCounter = 0
 
