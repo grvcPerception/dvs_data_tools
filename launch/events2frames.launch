@@ -12,7 +12,9 @@
     <param name="backgroundColor" value="black"/>
     <param name="nEventsFrame" value="2000"/>
     <param name="nEvents" value="400"/>
-    <param name="deltaTime" value="0.025"/>
+    <param name="deltaTime" value="0.005"/>
+    <!-- Activate for EyeBird -->
+    <param name="filterFlag" value="True"/>
   </node>
 
   <node name="image_view_events" pkg="image_view" type="image_view">

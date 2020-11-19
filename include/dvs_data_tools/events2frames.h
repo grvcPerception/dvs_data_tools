@@ -44,6 +44,9 @@ class Events2Frames{
         bool firstFlag_ = true;
         int events_counter_ = 0;
 
+        // Filtering options
+        bool filterFlag_ = false;
+
         enum visualization {BATCH = 0, NUMBEROFEVENTS = 1, TIME = 2, EXPERIMENTAL = 3};
         enum bColorList {BLACK = 0, WHITE = 1};
         enum displayType {GRAYSCALE = 0, BLACK_WHITE_NON_POLARITY = 1, RED_BLUE = 2};

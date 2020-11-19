@@ -8,6 +8,7 @@ Events2Frames::Events2Frames(ros::NodeHandle & nh, ros::NodeHandle nh_private): 
     nh_private.getParam("displayType", displayType_);
     nh_private.getParam("backgroundColor", bColor_);
     nh_private.getParam("deltaTime", deltaTime_); 
+    nh_private.getParam("filterFlag", filterFlag_); 
 
     loadDefinitions();
     
@@ -159,11 +160,16 @@ void Events2Frames::eventCallback(const dvs_msgs::EventArray::ConstPtr &event_ms
                  
     for (int ii = 0; ii<event_msg->events.size(); ++ii){
 
-        if(!utils_.inEdge(event_msg->events[ii].x, event_msg->events[ii].y)){
+        if(!filterFlag_){
             updateEventFrame(event_msg->events[ii]);
-            checkEventPublishing(event_msg->events[ii], n_event, ii);
+            checkEventPublishing(event_msg->events[ii], n_event, ii);    
         }
-
+        else{
+            if(!utils_.inEdge(event_msg->events[ii].x, event_msg->events[ii].y)){
+                updateEventFrame(event_msg->events[ii]);
+                checkEventPublishing(event_msg->events[ii], n_event, ii);
+            }
+        }
         /*
         //Add the vent into the buffer;
         eventBuffer_.push_back(event_msg->events[ii]);
