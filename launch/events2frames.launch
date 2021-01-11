@@ -8,13 +8,13 @@
     <remap from="events_frame" to="/dvs/events_frame"/>
     <remap from="events" to="/dvs/events_hf"/>
     <param name="visualization" value="experimental"/>
-    <param name="displayType" value="blackwithe-non-polarity"/>
-    <param name="backgroundColor" value="black"/>
+    <param name="displayType" value="red-blue"/>
+    <param name="backgroundColor" value="white"/>
     <param name="nEventsFrame" value="2000"/>
     <param name="nEvents" value="400"/>
-    <param name="deltaTime" value="0.005"/>
+    <param name="deltaTime" value="0.025"/>
     <!-- Activate for EyeBird -->
-    <param name="filterFlag" value="True"/>
+    <param name="filterFlag" value="False"/>
   </node>
 
   <node name="image_view_events" pkg="image_view" type="image_view">
