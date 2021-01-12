@@ -5,7 +5,10 @@ import rospy
 import numpy as np
 from dvs_msgs.msg import EventArray
 from dvs_msgs.msg import Event
+from sensor_msgs.msg import Image
+from sensor_msgs.msg import Imu
 import math
+
 
 def inEdge(x, y):
         return y<115 and x>179 and math.sqrt(pow(y-115,2) + pow(x-179,2)) > 182 or y>135 and x>245 and math.sqrt(pow(y-135,2) + pow(x-245,2)) > 131 or y>135 and x>260 and math.sqrt(pow(y-135,2) + pow(x-260,2)) > 124 or y<115 and x<160 and math.sqrt(pow(y-115,2) + pow(x-160,2)) > 165 or y>115 and x<160 and math.sqrt(pow(y-115,2) + pow(x-160,2)) > 178 or y>115 and x<105 and math.sqrt(pow(y-115,2) + pow(x-105,2)) > 144
@@ -52,6 +55,70 @@ EventsCallback.stepCounter = 1
 EventsCallback.msgCounter = 0
 
 
+def ImageCallback(msg):
+    print(str(msg.header.stamp))
+    #print('Hola')
+    # initialize time reference
+    if ImageCallback.msgCounter == 0:
+        ImageCallback.tZero = msg.header.stamp.secs + msg.header.stamp.nsecs*0.000000001
+        print('tZero initialized')
+
+    timestamp = msg.header.stamp.secs + msg.header.stamp.nsecs*0.000000001
+    localeTime = timestamp - ImageCallback.tZero
+
+    data_row = []
+    data_row.append(localeTime)
+    data_row.append(ImageCallback.msgCounter)
+    writer_events.writerow(data_row)
+
+    ImageCallback.msgCounter += 1
+
+ImageCallback.msgCounter = 0
+ImageCallback.tZero = 0
+
+def ImuCallback(msg):
+    print(str(msg.header.stamp))
+    #print('Hola')
+    # initialize time reference
+    if ImuCallback.msgCounter == 0:
+        ImuCallback.tZero = msg.header.stamp.secs + msg.header.stamp.nsecs*0.000000001
+        print('tZero initialized')
+
+    timestamp = msg.header.stamp.secs + msg.header.stamp.nsecs*0.000000001
+    localeTime = timestamp - ImuCallback.tZero
+
+    data_row = []
+    data_row.append(localeTime)
+    data_row.append(ImuCallback.msgCounter)
+    writer_events.writerow(data_row)
+
+    ImuCallback.msgCounter += 1
+
+ImuCallback.msgCounter = 0
+ImuCallback.tZero = 0
+
+def EventBatchCallback(msg):
+    print(str(msg.header.stamp))
+    #print('Hola')
+    # initialize time reference
+    if EventBatchCallback.msgCounter == 0:
+        EventBatchCallback.tZero = msg.header.stamp.secs + msg.header.stamp.nsecs*0.000000001
+        print('tZero initialized')
+
+    timestamp = msg.header.stamp.secs + msg.header.stamp.nsecs*0.000000001
+    localeTime = timestamp - EventBatchCallback.tZero
+
+    data_row = []
+    data_row.append(localeTime)
+    data_row.append(EventBatchCallback.msgCounter)
+    writer_events.writerow(data_row)
+
+    EventBatchCallback.msgCounter += 1
+
+EventBatchCallback.msgCounter = 0
+EventBatchCallback.tZero = 0
+
+
 
 def main():
 
@@ -66,7 +133,10 @@ def main():
 
     writer_events = csv.writer(open(cwd+"/NEvents_"+date_id+".csv", 'w'), delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
-    subscriber=rospy.Subscriber('/dvs/events', EventArray, EventsCallback, queue_size=1)
+    subscriber_events =rospy.Subscriber('/dvs/events', EventArray, EventsCallback, queue_size=1)
+    #subscriber_events =rospy.Subscriber('/dvs/events', EventArray, EventBatchCallback, queue_size=1)
+    #subscriber_aps =rospy.Subscriber('/dvs/image_raw', Image, ImageCallback, queue_size=1)
+    #subscriber_imu =rospy.Subscriber('/dvs/imu', Imu, ImuCallback, queue_size=1)
 
     rospy.spin()
 
