@@ -1,0 +1,27 @@
+<launch>
+
+  <node name="e2f_right" pkg="dvs_data_tools" type="eventFrame_node" output="screen">
+    <remap from="events_topic" to="/davis/right/events"/>
+    <remap from="events_frame" to="/davis/right/events_frame"/>
+    <remap from="events" to="/davis/right/events_hf"/>
+    <param name="visualization" value="batch"/>
+    <param name="displayType" value="red-blue"/>
+    <param name="backgroundColor" value="white"/>
+    <param name="nEventsFrame" value="2000"/>
+    <param name="nEvents" value="400"/>
+    <param name="deltaTime" value="0.025"/>
+  </node>
+  
+  <node name="e2f_left" pkg="dvs_data_tools" type="eventFrame_node" output="screen">
+    <remap from="events_topic" to="/davis/left/events"/>
+    <remap from="events_frame" to="/davis/left/events_frame"/>
+    <remap from="events" to="/davis/left/events_hf"/>
+    <param name="visualization" value="batch"/>
+    <param name="displayType" value="red-blue"/>
+    <param name="backgroundColor" value="white"/>
+    <param name="nEventsFrame" value="2000"/>
+    <param name="nEvents" value="400"/>
+    <param name="deltaTime" value="0.025"/>
+  </node>
+
+</launch>

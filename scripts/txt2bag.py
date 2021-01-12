@@ -87,7 +87,9 @@ def main():
 
     video_t = 1.0/video_rate
     
+    print("Loading events")
     events = genfromtxt(path_to_events_, delimiter=',')
+    print("Loading images timestamps")
     hf_image_timestamps = genfromtxt(path_to_image_timestamps_, delimiter=',')
 
     image_total_time = hf_image_timestamps[len(hf_image_timestamps)-1]

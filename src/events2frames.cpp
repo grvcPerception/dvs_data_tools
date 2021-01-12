@@ -49,7 +49,7 @@ void Events2Frames::publishEventImage(){
         case BLACK_WHITE_NON_POLARITY :
             cv::normalize(eventFrame_, eventFrame_, 0, 255, cv::NORM_MINMAX, CV_8UC1);
             // Invert intensity
-            cv::subtract(cv::Scalar::all(255),eventFrame_,eventFrame_); 
+            //cv::subtract(cv::Scalar::all(255),eventFrame_,eventFrame_); 
 
             eventFramePub_msg_ = cv_bridge::CvImage(std_msgs::Header(), "mono8", eventFrame_).toImageMsg();
             eventFramePub_.publish(eventFramePub_msg_);
@@ -162,7 +162,9 @@ void Events2Frames::eventCallback(const dvs_msgs::EventArray::ConstPtr &event_ms
             break;
 
         case BLACK_WHITE_NON_POLARITY :
-            eventFrame_.at<uint8_t>(cv::Point(event_msg->events[ii].x, event_msg->events[ii].y))++;   
+            //eventFrame_.at<uint8_t>(cv::Point(event_msg->events[ii].x, event_msg->events[ii].y))++; 
+            if (event_msg->events[ii].polarity)
+                eventFrame_.at<uint8_t>(cv::Point(event_msg->events[ii].x, event_msg->events[ii].y)) = 255;     
             break;
 
         case RED_BLUE :

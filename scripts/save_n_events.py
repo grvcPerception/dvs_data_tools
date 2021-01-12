@@ -35,7 +35,7 @@ def EventsCallback(msg):
 
           EventsCallback.eventCounter = 0
           EventsCallback.stepCounter += 1
-          
+
     EventsCallback.msgCounter += 1
 
 EventsCallback.tZero = 0
@@ -58,11 +58,11 @@ def main():
     print("The text files will be saved in:"+cwd)
 
     writer_events = csv.writer(open(cwd+"/NEvents_"+date_id+".csv", 'w'), delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-    
+
     subscriber=rospy.Subscriber('/dvs/events', EventArray, EventsCallback, queue_size=1)
 
     rospy.spin()
-   
+
 
 if __name__ == "__main__":
-    main() 
+    main()
