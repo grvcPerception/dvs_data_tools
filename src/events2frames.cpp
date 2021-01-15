@@ -51,14 +51,11 @@ void Events2Frames::publishEventImage(){
             break;
 
         case BLACK_WHITE_NON_POLARITY :
-            cv::normalize(eventFrame_, eventFrame_, 0, 255, cv::NORM_MINMAX, CV_8UC1);
-            // Invert intensity
-            //cv::subtract(cv::Scalar::all(255),eventFrame_,eventFrame_);
 
             if (bColorListVec_[bColor_]==BLACK)
-                cv::threshold(eventFrame_, eventFrame_, 0, 255, cv::THRESH_BINARY);
+              cv::threshold(eventFrame_, eventFrame_, 0, 255, cv::THRESH_BINARY);
             else
-                cv::threshold(eventFrame_, eventFrame_, 254, 255, cv::THRESH_BINARY);
+              cv::threshold(eventFrame_, eventFrame_, 254, 255, cv::THRESH_BINARY);
 
             eventFramePub_msg_ = cv_bridge::CvImage(std_msgs::Header(), "mono8", eventFrame_).toImageMsg();
             eventFramePub_.publish(eventFramePub_msg_);
