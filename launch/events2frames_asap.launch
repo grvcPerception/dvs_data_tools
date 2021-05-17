@@ -5,18 +5,18 @@
     <remap from="events_topic" to="/asap/events"/>
     <remap from="events_frame" to="/asap/events_frame"/>
     <remap from="events" to="/asap/events_hf"/>
-    <param name="visualization" value="experimental"/>
+    <param name="visualization" value="batch"/>
     <param name="displayType" value="red-blue"/>
     <param name="backgroundColor" value="white"/>
     <param name="nEventsFrame" value="2000"/>
     <param name="nEvents" value="400"/>
     <param name="deltaTime" value="0.01"/>
 
-    <param name="filterFlag" value="True"/>
+    <param name="undistorEvents" value="False"/>
     <rosparam>K:  [222.9315295284825, 0, 164.477099453093, 0, 222.370750845849, 119.8137746721953, 0, 0, 1]</rosparam>
 		<rosparam>D:  [-0.3797768118687727, 0.1139724372012754, 0.001339872799456372, 7.604579106911388e-05, 0]</rosparam>
     <!-- Activate for EyeBird -->
-    <param name="filterFlag" value="True"/>
+    <param name="filterFlag" value="False"/>
   </node>
 
   <node name="image_view_events" pkg="image_view" type="image_view">

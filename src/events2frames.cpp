@@ -1,282 +1,307 @@
 #include "dvs_data_tools/events2frames.h"
 
+namespace dvs_tools
+{
 
-Events2Frames::Events2Frames(ros::NodeHandle & nh, ros::NodeHandle nh_private): nh_(nh){
-    nh_private.getParam("visualization", visualizationType_);
-    nh_private.getParam("nEventsFrame", nEventsFrame_);
-    nh_private.getParam("nEvents", nEvents_);
-    nh_private.getParam("displayType", displayType_);
-    nh_private.getParam("backgroundColor", bColor_);
-    nh_private.getParam("deltaTime", deltaTime_);
-    nh_private.getParam("filterFlag", filterFlag_);
-    nh_private.getParam("undistorEvents", undistorEventsFlag_);
+  Events2Frames::Events2Frames(ros::NodeHandle & nh, ros::NodeHandle nh_private): nh_(nh){
+      nh_private.getParam("visualization", visualizationType_);
+      nh_private.getParam("nEventsFrame", nEventsFrame_);
+      nh_private.getParam("nEvents", nEvents_);
+      nh_private.getParam("displayType", displayType_);
+      nh_private.getParam("backgroundColor", bColor_);
+      nh_private.getParam("deltaTime", deltaTime_);
+      nh_private.getParam("filterFlag", filterFlag_);
+      nh_private.getParam("undistorEvents", undistorEventsFlag_);
 
-    loadDefinitions();
+      loadDefinitions();
 
-    // Subscribers
-    event_sub_ = nh_.subscribe("events_topic", 10, &Events2Frames::eventCallback, this);
-    // Publishers
-    image_transport::ImageTransport it(nh_);
-    eventFramePub_ = it.advertise("events_frame", 1);
-    eventPub_ = nh_.advertise<dvs_msgs::EventArray>("events", 1, true);
+      // Subscribers
+      event_sub_ = nh_.subscribe("events_topic", 10, &Events2Frames::eventCallback, this);
+      // Publishers
+      image_transport::ImageTransport it(nh_);
+      eventFramePub_ = it.advertise("events_frame", 1);
+      eventPub_ = nh_.advertise<dvs_msgs::EventArray>("events", 1, true);
 
-    if(undistorEventsFlag_){
-      std::vector <double> theresholdParameters, Kc, Dc;
-      nh_private.getParam("K", Kc);
-      nh_private.getParam("D", Dc);
-      utils_.loadCameraCalibration(Kc,Dc);
-    }
+      if(undistorEventsFlag_){
+        std::vector <double> theresholdParameters, Kc, Dc;
+        nh_private.getParam("K", Kc);
+        nh_private.getParam("D", Dc);
+        utils_.loadCameraCalibration(Kc,Dc);
+      }
 
-}
+      // dynamic reconfigure
+      dynamic_reconfigure_callback_ = boost::bind(&Events2Frames::reconfigureCallback, this, _1, _2);
+      server_.reset(new dynamic_reconfigure::Server<dvs_data_tools::dvs_data_toolsConfig>(nh_private));
+      server_->setCallback(dynamic_reconfigure_callback_);
 
-Events2Frames::~Events2Frames(){}
+  }
 
-void Events2Frames::publishEventImage(){
+  Events2Frames::~Events2Frames(){}
 
-    switch(displayTypeVec_[displayType_] ){
-        case GRAYSCALE :
-            cv::normalize(on_events_, on_events_, 0, 128, cv::NORM_MINMAX, CV_8UC1);
-            cv::normalize(off_events_, off_events_, 0, 127, cv::NORM_MINMAX, CV_8UC1);
+  void Events2Frames::publishEventImage(){
 
-            // Add positive an negative to the output image
-            eventFrame_ += on_events_;
-            eventFrame_ -= off_events_;
+      switch(displayTypeVec_[displayType_] ){
+          case GRAYSCALE :
+              cv::normalize(on_events_, on_events_, 0, 128, cv::NORM_MINMAX, CV_8UC1);
+              cv::normalize(off_events_, off_events_, 0, 127, cv::NORM_MINMAX, CV_8UC1);
 
-            eventFramePub_msg_ = cv_bridge::CvImage(std_msgs::Header(), "mono8", eventFrame_).toImageMsg();
-            eventFramePub_.publish(eventFramePub_msg_);
+              // Add positive an negative to the output image
+              eventFrame_ += on_events_;
+              eventFrame_ -= off_events_;
 
-            // reset the image
-            //eventFrame_ = cv::Mat(sensorHeight_,sensorWidth_, CV_8U);
-            eventFrame_ = cv::Scalar(128);
+              eventFramePub_msg_ = cv_bridge::CvImage(std_msgs::Header(), "mono8", eventFrame_).toImageMsg();
+              eventFramePub_.publish(eventFramePub_msg_);
 
-            // reset the event on - off images
-            //on_events_ = cv::Mat(sensorHeight_,sensorWidth_, CV_8U);
-            on_events_ = cv::Scalar(0);
+              // reset the image
+              //eventFrame_ = cv::Mat(sensorHeight_,sensorWidth_, CV_8U);
+              eventFrame_ = cv::Scalar(128);
 
-            //off_events_ = cv::Mat(sensorHeight_,sensorWidth_, CV_8U);
-            off_events_ = cv::Scalar(0);
-            break;
+              // reset the event on - off images
+              //on_events_ = cv::Mat(sensorHeight_,sensorWidth_, CV_8U);
+              on_events_ = cv::Scalar(0);
 
-        case BLACK_WHITE_NON_POLARITY :
+              //off_events_ = cv::Mat(sensorHeight_,sensorWidth_, CV_8U);
+              off_events_ = cv::Scalar(0);
+              break;
 
-            if (bColorListVec_[bColor_]==BLACK)
-              cv::threshold(eventFrame_, eventFrame_, 0, 255, cv::THRESH_BINARY);
-            else
-              cv::threshold(eventFrame_, eventFrame_, 254, 255, cv::THRESH_BINARY);
+          case BLACK_WHITE_NON_POLARITY :
 
-            eventFramePub_msg_ = cv_bridge::CvImage(std_msgs::Header(), "mono8", eventFrame_).toImageMsg();
-            eventFramePub_.publish(eventFramePub_msg_);
+              if (bColorListVec_[bColor_]==BLACK)
+                cv::threshold(eventFrame_, eventFrame_, 0, 255, cv::THRESH_BINARY);
+              else
+                cv::threshold(eventFrame_, eventFrame_, 254, 255, cv::THRESH_BINARY);
 
-            if (bColorListVec_[bColor_]==WHITE)
-                eventFrame_ = cv::Scalar(255, 255, 255);
-            else
-                eventFrame_ = cv::Scalar(0);
-            break;
+              eventFramePub_msg_ = cv_bridge::CvImage(std_msgs::Header(), "mono8", eventFrame_).toImageMsg();
+              eventFramePub_.publish(eventFramePub_msg_);
 
-        case RED_BLUE :
-            eventFramePub_msg_ = cv_bridge::CvImage(std_msgs::Header(), "bgr8", eventFrame_).toImageMsg();
-            eventFramePub_.publish(eventFramePub_msg_);
-            // reset the event image
-            eventFrame_ = cv::Mat::zeros(sensorHeight_,sensorWidth_, CV_8UC3);
-            if (bColorListVec_[bColor_]==WHITE)
-                eventFrame_ = cv::Scalar(255, 255, 255);
-            break;
+              if (bColorListVec_[bColor_]==WHITE)
+                  eventFrame_ = cv::Scalar(255, 255, 255);
+              else
+                  eventFrame_ = cv::Scalar(0);
+              break;
 
-        default :
-            ROS_INFO("Cannot publish frame, invalid displayType argument");
+          case RED_BLUE :
+              eventFramePub_msg_ = cv_bridge::CvImage(std_msgs::Header(), "bgr8", eventFrame_).toImageMsg();
+              eventFramePub_.publish(eventFramePub_msg_);
+              // reset the event image
+              eventFrame_ = cv::Mat::zeros(sensorHeight_,sensorWidth_, CV_8UC3);
+              if (bColorListVec_[bColor_]==WHITE)
+                  eventFrame_ = cv::Scalar(255, 255, 255);
+              break;
 
-    }
-}
+          default :
+              ROS_INFO("Cannot publish frame, invalid displayType argument");
 
-void Events2Frames::publishEventSet(){
-    eventPub_msg_.header.stamp = ros::Time::now();
-    eventPub_msg_.header.frame_id = std::to_string(frameIdEvents_);
-    eventPub_msg_.height =  sensorHeight_;
-    eventPub_msg_.width = sensorWidth_;
-    eventPub_msg_.events = eventBuffer_;
+      }
+  }
 
-    eventPub_.publish(eventPub_msg_);
+  void Events2Frames::publishEventSet(){
+      eventPub_msg_.header.stamp = ros::Time::now();
+      eventPub_msg_.header.frame_id = std::to_string(frameIdEvents_);
+      eventPub_msg_.height =  sensorHeight_;
+      eventPub_msg_.width = sensorWidth_;
+      eventPub_msg_.events = eventBuffer_;
 
-    eventBuffer_.clear();
-    frameIdEvents_++;
+      eventPub_.publish(eventPub_msg_);
 
-}
+      eventBuffer_.clear();
+      frameIdEvents_++;
 
-void Events2Frames::loadDefinitions(){
-    // Define map
-    visualizationTypeVec_["batch"]=BATCH;
-    visualizationTypeVec_["number_of_events"]=NUMBEROFEVENTS;
-    visualizationTypeVec_["time"]=TIME;
-    visualizationTypeVec_["experimental"]=EXPERIMENTAL;
-    // Define color map
-    bColorListVec_["black"] = BLACK;
-    bColorListVec_["white"] = WHITE;
-    // drawing type
-    displayTypeVec_["grayscale"] = GRAYSCALE;
-    displayTypeVec_["blackwithe-non-polarity"] = BLACK_WHITE_NON_POLARITY;
-    displayTypeVec_["red-blue"] = RED_BLUE;
+  }
 
-}
+  void Events2Frames::loadDefinitions(){
+      // Define map
+      visualizationTypeVec_["batch"]=BATCH;
+      visualizationTypeVec_["number_of_events"]=NUMBEROFEVENTS;
+      visualizationTypeVec_["time"]=TIME;
+      visualizationTypeVec_["experimental"]=EXPERIMENTAL;
+      // Define color map
+      bColorListVec_["black"] = BLACK;
+      bColorListVec_["white"] = WHITE;
+      // drawing type
+      displayTypeVec_["grayscale"] = GRAYSCALE;
+      displayTypeVec_["blackwithe-non-polarity"] = BLACK_WHITE_NON_POLARITY;
+      displayTypeVec_["red-blue"] = RED_BLUE;
 
-void Events2Frames::initParameters(int width, int height, double time, double timeEvent){
-    sensorWidth_ = width;
-    sensorHeight_ = height;
-    firstFlag_ = false;
-    timeStart_ = time;
-    timeStartEvent_ = timeEvent;
+  }
 
-    // Initialize the type to publish
-    switch(displayTypeVec_[displayType_] ){
-        case GRAYSCALE :
-            eventFrame_ = cv::Mat(sensorHeight_,sensorWidth_, CV_8U);
-            eventFrame_ = cv::Scalar(128);
+  void Events2Frames::initParameters(int width, int height, double time, double timeEvent){
+      sensorWidth_ = width;
+      sensorHeight_ = height;
+      firstFlag_ = false;
+      timeStart_ = time;
+      timeStartEvent_ = timeEvent;
 
-            on_events_ = cv::Mat(sensorHeight_,sensorWidth_, CV_8U);
-            on_events_ = cv::Scalar(0);
+      // Initialize the type to publish
+      switch(displayTypeVec_[displayType_] ){
+          case GRAYSCALE :
+              eventFrame_ = cv::Mat(sensorHeight_,sensorWidth_, CV_8U);
+              eventFrame_ = cv::Scalar(128);
 
-            off_events_ = cv::Mat(sensorHeight_,sensorWidth_, CV_8U);
-            off_events_ = cv::Scalar(0);
+              on_events_ = cv::Mat(sensorHeight_,sensorWidth_, CV_8U);
+              on_events_ = cv::Scalar(0);
 
-            break;
-        case BLACK_WHITE_NON_POLARITY :
-            eventFrame_ = cv::Mat(sensorHeight_,sensorWidth_, CV_8U);
-            if (bColorListVec_[bColor_]==WHITE)
-                eventFrame_ = cv::Scalar(255, 255, 255);
-            else
-                eventFrame_ = cv::Scalar(0);
-            break;
+              off_events_ = cv::Mat(sensorHeight_,sensorWidth_, CV_8U);
+              off_events_ = cv::Scalar(0);
 
-        case RED_BLUE :
-            eventFrame_ = cv::Mat::zeros(sensorHeight_,sensorWidth_, CV_8UC3);
-            if (bColorListVec_[bColor_]==WHITE)
-                eventFrame_ = cv::Scalar(255, 255, 255);
-            break;
+              break;
+          case BLACK_WHITE_NON_POLARITY :
+              eventFrame_ = cv::Mat(sensorHeight_,sensorWidth_, CV_8U);
+              if (bColorListVec_[bColor_]==WHITE)
+                  eventFrame_ = cv::Scalar(255, 255, 255);
+              else
+                  eventFrame_ = cv::Scalar(0);
+              break;
 
-        default :
-            ROS_INFO("Cannot initialize frame, invalid displayType argument");
-    }
-}
+          case RED_BLUE :
+              eventFrame_ = cv::Mat::zeros(sensorHeight_,sensorWidth_, CV_8UC3);
+              if (bColorListVec_[bColor_]==WHITE)
+                  eventFrame_ = cv::Scalar(255, 255, 255);
+              break;
 
-void Events2Frames::eventCallback(const dvs_msgs::EventArray::ConstPtr &event_msg){
-    const int n_event = event_msg->events.size();
-    if (n_event == 0)
-        return;
+          default :
+              ROS_INFO("Cannot initialize frame, invalid displayType argument");
+      }
+  }
 
-    if (firstFlag_ == true)
-        initParameters(event_msg->width, event_msg->height, ros::Time::now().toSec(), event_msg->events[0].ts.toSec());
+  void Events2Frames::reconfigureCallback(dvs_data_tools::dvs_data_toolsConfig &config, uint32_t level){
+    //std::cout<<"Current paramters ..... undistorEvents: "<<config.undistorEvents<<" filterFlag: "<<config.filterFlag<<std::endl;
+    undistorEventsFlag_ = config.undistorEvents;
+    filterFlag_ = config.filterFlag;
+  }
 
-    for (int ii = 0; ii<event_msg->events.size(); ++ii){
+  void Events2Frames::eventCallback(const dvs_msgs::EventArray::ConstPtr &event_msg){
+      const int n_event = event_msg->events.size();
+      if (n_event == 0)
+          return;
 
-        if(0 <= event_msg->events[ii].x && event_msg->events[ii].x < event_msg->width && 0 <= event_msg->events[ii].y && event_msg->events[ii].y < event_msg->height){
-          if(!filterFlag_){
-              updateEventFrame(event_msg->events[ii]);
-              checkEventPublishing(event_msg->events[ii], n_event, ii);
+      if (firstFlag_ == true)
+          initParameters(event_msg->width, event_msg->height, ros::Time::now().toSec(), event_msg->events[0].ts.toSec());
+      else{
+          // This should happen only with bag in a loop
+          if(timeStartEvent_ > event_msg->events[0].ts.toSec())
+            updateTimeReference(event_msg->events[0].ts.toSec());
+      }
+
+      for (int ii = 0; ii<event_msg->events.size(); ++ii){
+          // Check space condition
+          if(0 <= event_msg->events[ii].x && event_msg->events[ii].x < event_msg->width && 0 <= event_msg->events[ii].y && event_msg->events[ii].y < event_msg->height){
+            bool valid_event = updateEventFrame(event_msg->events[ii]);
+            checkEventPublishing(event_msg->events[ii], n_event, ii, valid_event);
           }
+      }
+  }
+
+  void Events2Frames::updateTimeReference(double time){
+    timeStart_ = ros::Time::now().toSec();
+    timeStartEvent_ = time;
+  }
+
+  bool Events2Frames::updateEventFrame(dvs_msgs::Event event){
+
+      // Check filter
+      if(filterFlag_){
+        if(utils_.inEdge(event.x, event.y))
+          return false;
+      }
+
+      // Undistort event
+      if(undistorEventsFlag_){
+        cv::Point e = utils_.undistortEvent(event.x, event.y);
+        if (e.x>=0 && e.y>=0){
+          event.x = e.x;
+          event.y = e.y;
+        }
+        else
+          return false;
+      }
+
+      // Accumulate events to display
+      switch(displayTypeVec_[displayType_] ){
+      case GRAYSCALE :
+          if (event.polarity)
+              on_events_.at<uint8_t>(cv::Point(event.x, event.y))++;
+          else
+              off_events_.at<uint8_t>(cv::Point(event.x, event.y))++;
+          break;
+
+      case BLACK_WHITE_NON_POLARITY :
+          if (bColorListVec_[bColor_]==BLACK)
+              eventFrame_.at<uint8_t>(cv::Point(event.x, event.y))++;
           else{
-              if(!utils_.inEdge(event_msg->events[ii].x, event_msg->events[ii].y)){
-                  if(undistorEventsFlag_){
-                    cv::Point e = utils_.undistortEvent(event_msg->events[ii].x, event_msg->events[ii].y);
-                    if (e.x>=0 && e.y>=0){
-                      dvs_msgs::Event event;
-                      event = event_msg->events[ii];
-                      event.x = e.x;
-                      event.y = e.y;
-                      updateEventFrame(event);
-                      checkEventPublishing(event, n_event, ii);
-                    }
-                  }
-                  else{
-                    updateEventFrame(event_msg->events[ii]);
-                    checkEventPublishing(event_msg->events[ii], n_event, ii);
-                  }
-              }
+              if(eventFrame_.at<uint8_t>(cv::Point(event.x, event.y)) > 0)
+                  eventFrame_.at<uint8_t>(cv::Point(event.x, event.y))--;
           }
-        }
-    }
-}
+          break;
 
-void Events2Frames::updateEventFrame(dvs_msgs::Event event){
+      case RED_BLUE :
+          if(event.polarity)
+              eventFrame_.at<cv::Vec3b>(cv::Point(event.x,event.y))=cv::Vec3b(255,0,0);
+          else
+              eventFrame_.at<cv::Vec3b>(cv::Point(event.x,event.y))=cv::Vec3b(0,0,255);
+          break;
 
+      default :
+          ROS_INFO("Invalid displayType argument");
+      }
 
-    // Accumulate events for displaying
-    switch(displayTypeVec_[displayType_] ){
-    case GRAYSCALE :
-        if (event.polarity)
-            on_events_.at<uint8_t>(cv::Point(event.x, event.y))++;
-        else
-            off_events_.at<uint8_t>(cv::Point(event.x, event.y))++;
-        break;
+      return true;
+  }
 
-    case BLACK_WHITE_NON_POLARITY :
-        if (bColorListVec_[bColor_]==BLACK)
-            eventFrame_.at<uint8_t>(cv::Point(event.x, event.y))++;
-        else{
-            if(eventFrame_.at<uint8_t>(cv::Point(event.x, event.y)) > 0)
-                eventFrame_.at<uint8_t>(cv::Point(event.x, event.y))--;
-        }
-        break;
+  void Events2Frames::checkEventPublishing(dvs_msgs::Event event, int n_event, int current_event_index, bool valid_event){
+      static int event_counter__ = 0;
 
-    case RED_BLUE :
-        if(event.polarity)
-            eventFrame_.at<cv::Vec3b>(cv::Point(event.x,event.y))=cv::Vec3b(255,0,0);
-        else
-            eventFrame_.at<cv::Vec3b>(cv::Point(event.x,event.y))=cv::Vec3b(0,0,255);
-        break;
+      if(valid_event){
+        eventBuffer_.push_back(event);
+        event_counter__++;
+      }
 
-    default :
-        ROS_INFO("Invalid displayType argument");
-    }
-}
+      double currentTime;
+      switch(visualizationTypeVec_[visualizationType_]){
+          case BATCH :
+              if (current_event_index == n_event-1){
+                  publishEventImage();
+                  publishEventSet();
+              }
+              break;
+          case NUMBEROFEVENTS :
+              if (event_counter__ >= nEventsFrame_){
+                  event_counter__ = 0;
+                  publishEventImage();
+              }
+              if (eventBuffer_.size() > nEvents_-1)
+                  publishEventSet();
+              break;
+          case TIME :
+              currentTime = ros::Time::now().toSec()-timeStart_;
+              if(currentTime >= deltaTime_){
+                  timeStart_ = ros::Time::now().toSec();
+                  publishEventImage();
+                  publishEventSet();
+              }
+              break;
+          case EXPERIMENTAL :
+              currentTime = event.ts.toSec()-timeStartEvent_;
+              if(currentTime >= deltaTime_){
+                  timeStartEvent_ = event.ts.toSec();
+                  publishEventImage();
+                  publishEventSet();
+              }
+              break;
+          default :
+              ROS_INFO("Invalid visualizationType_ argument");
+      }
 
-void Events2Frames::checkEventPublishing(dvs_msgs::Event event, int n_event, int current_event_index){
+  }
 
-    eventBuffer_.push_back(event);
-    double currentTime;
-    switch(visualizationTypeVec_[visualizationType_]){
-        case BATCH :
-            if (current_event_index == n_event-1){
-                publishEventImage();
-                publishEventSet();
-            }
-            break;
-        case NUMBEROFEVENTS :
-            if (events_counter_ >= nEventsFrame_){
-                events_counter_ = 0;
-                publishEventImage();
-            }
-            else
-                events_counter_++;
-            if (eventBuffer_.size() > nEvents_-1)
-                publishEventSet();
-            break;
-        case TIME :
-            currentTime = ros::Time::now().toSec()-timeStart_;
-            if(currentTime >= deltaTime_){
-                timeStart_ = ros::Time::now().toSec();
-                publishEventImage();
-                publishEventSet();
-            }
-            break;
-        case EXPERIMENTAL :
-            currentTime = event.ts.toSec()-timeStartEvent_;
-            if(currentTime >= deltaTime_){
-                timeStartEvent_ = event.ts.toSec();
-                publishEventImage();
-                publishEventSet();
-            }
-            break;
-        default :
-            ROS_INFO("Invalid visualizationType_ argument");
-    }
+  cv::Mat Events2Frames::getEventFrame(){
+      if (eventFrame_.empty()){
+          eventFrame_ = cv::Mat::zeros(sensorHeight_,sensorWidth_, CV_8UC3);
+          if (bColorListVec_[bColor_]==WHITE)
+              eventFrame_ = cv::Scalar(255, 255, 255);
+      }
+      else
+          return eventFrame_;
+  }
 
-}
-
-cv::Mat Events2Frames::getEventFrame(){
-    if (eventFrame_.empty()){
-        eventFrame_ = cv::Mat::zeros(sensorHeight_,sensorWidth_, CV_8UC3);
-        if (bColorListVec_[bColor_]==WHITE)
-            eventFrame_ = cv::Scalar(255, 255, 255);
-    }
-    else
-        return eventFrame_;
-}
+} //namespace

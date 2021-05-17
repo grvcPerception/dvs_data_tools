@@ -8,7 +8,7 @@ int main(int argc, char* argv[])
   ros::NodeHandle nh;
   ros::NodeHandle nh_private("~");
 
-  Events2Frames eventsRenderer(nh, nh_private);
+  dvs_tools::Events2Frames eventsRenderer(nh, nh_private);
 
   ros::spin();
 
