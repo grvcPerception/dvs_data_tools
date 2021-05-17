@@ -16,12 +16,18 @@
 
 class dvsUtils{
     public:
-        dvsUtils();
-        ~dvsUtils();
-        
-        bool inEdge(unsigned int xx, unsigned int yy);
-        
+      //dvsUtils(int width, int height, Eigen::MatrixXd K, Eigen::VectorXd D);
+      dvsUtils();
+      ~dvsUtils();
+
+      bool inEdge(unsigned int xx, unsigned int yy);
+      cv::Point undistortEvent(int u, int v);
+      void loadCameraCalibration(std::vector <double> Kc, std::vector <double> Dc);
+
     private:
-        
-        
+      Eigen::MatrixXd K_ = Eigen::MatrixXd::Zero(3,3);
+      Eigen::VectorXd D_ = Eigen::VectorXd::Zero(5);
+      int sensorWidth_ = 346;
+      int sensorHeight_ = 260;
+
 };

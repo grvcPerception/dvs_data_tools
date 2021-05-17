@@ -31,6 +31,8 @@ def EventsCallback(msg):
 
             if localTime > 0.82337 and localTime < 2.08 and EventsCallback.imuDataIndex <= len(imu_data):
                 #print('data')
+                # Increment the event counter
+                EventsCallback.eventCounter += 1
                 # Initialize the first image
                 if EventsCallback.firstImg == True:
                     EventsCallback.event_img = np.zeros((260,346,3), np.uint8)
@@ -44,10 +46,16 @@ def EventsCallback(msg):
 
                 # Save the image if it's the case
                 if (localTime - EventsCallback.imgTs > EventsCallback.time_img or EventsCallback.prevCurveLimit != EventsCallback.curveLimit):
+                    data_row = []
+                    data_row.append(localTime)
+                    data_row.append(EventsCallback.eventCounter)
+
                     if EventsCallback.curveLimit == True:
                         cv2.imwrite(path_border_folder+'/'+str(EventsCallback.imgCounter).zfill(8)+'.png', EventsCallback.event_img)
+                        data_row.append(1)
                     else :
                         cv2.imwrite(path_center_folder+'/'+str(EventsCallback.imgCounter).zfill(8)+'.png', EventsCallback.event_img)
+                        data_row.append(0)
                     EventsCallback.imgCounter +=1
 
                     cv2.imshow('Test', EventsCallback.event_img)
@@ -55,7 +63,9 @@ def EventsCallback(msg):
                     # Clear the image and update the image time
                     EventsCallback.event_img = np.zeros((msg.height,msg.width,3), np.uint8)
                     EventsCallback.imgTs = localTime
-                    #print('Holaaaaa')
+
+                    writer_events.writerow(data_row)
+                    EventsCallback.eventCounter = 0
 
                 #print(str(imu_data[EventsCallback.imuDataIndex][6])+' '+str(EventsCallback.imuDataIndex))
                 if EventsCallback.min_th < float(imu_data[EventsCallback.imuDataIndex][6]) and float(imu_data[EventsCallback.imuDataIndex][6]) < EventsCallback.max_th:
@@ -69,12 +79,12 @@ def EventsCallback(msg):
                     EventsCallback.curveLimit = True
                     #if EventsCallback.prevCurveLimit != EventsCallback.curveLimit:
                     #print('Peak :'+str(imu_data[EventsCallback.imuDataIndex][6])+' '+str(EventsCallback.imuDataIndex))
-
                 EventsCallback.event_img = draw_pixel(EventsCallback.event_img, msg.events[i].x,msg.events[i].y,msg.events[i].polarity)
 
     EventsCallback.msgCounter += 1
 
 EventsCallback.tZero = 0
+EventsCallback.eventCounter = 0
 EventsCallback.msgCounter = 0
 EventsCallback.imuDataIndex = 0
 EventsCallback.imgCounter = 0
@@ -83,7 +93,7 @@ EventsCallback.curveLimit = False
 EventsCallback.prevCurveLimit = False
 EventsCallback.firstImg = True
 EventsCallback.event_img = np.zeros((260,346,3), np.uint8)
-EventsCallback.time_img = 0.01
+EventsCallback.time_img = 0.001
 EventsCallback.min_th = -30
 EventsCallback.max_th = 3.5
 
@@ -95,7 +105,7 @@ def main():
     global writer_events, writer_event_time, writer_event_polarity, imu_data, path_border_folder, path_center_folder
 
     imu_data = []
-    fileImuData = '/home/juan/catkin_ws/test/imu_vn.csv'
+    fileImuData = '/home/juan/catkin_ws/test_dvs/imu_vn.csv'
     with open(fileImuData, mode='r') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         for row in csv_reader:
@@ -115,8 +125,8 @@ def main():
         path_center_folder = ref_folder+'/center'
         os.makedirs(path_center_folder)
         print("The text files will be saved in:"+ref_folder)
+        writer_events = csv.writer(open(ref_folder+"/NEvents.csv", 'w'), delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
-    #writer_events = csv.writer(open(cwd+"/NEvents_"+date_id+".csv", 'w'), delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
     subscriber_events = rospy.Subscriber('/dvs/events', EventArray, EventsCallback, queue_size=1)
     rospy.spin()
 

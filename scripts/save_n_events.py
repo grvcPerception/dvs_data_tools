@@ -30,8 +30,8 @@ def EventsCallback(msg):
        # Write a row with the event (timestamp, x, y, polarity)
        localeTime = timestamp - EventsCallback.tZero
        if localeTime < EventsCallback.timeStep*EventsCallback.stepCounter :
-           if not inEdge(msg.events[i].x, msg.events[i].y):
-               EventsCallback.eventCounter += 1
+           #if not inEdge(msg.events[i].x, msg.events[i].y):
+           EventsCallback.eventCounter += 1
        else:
           #print(localeTime)
           data_row = []
@@ -40,8 +40,9 @@ def EventsCallback(msg):
           writer_events.writerow(data_row)
 
           EventsCallback.eventCounter = 0
-          if not inEdge(msg.events[i].x, msg.events[i].y):
-              EventsCallback.stepCounter += 1
+          #if not inEdge(msg.events[i].x, msg.events[i].y):
+          EventsCallback.eventCounter += 1
+          EventsCallback.stepCounter += 1
 
     EventsCallback.msgCounter += 1
 

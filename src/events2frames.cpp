@@ -9,6 +9,7 @@ Events2Frames::Events2Frames(ros::NodeHandle & nh, ros::NodeHandle nh_private): 
     nh_private.getParam("backgroundColor", bColor_);
     nh_private.getParam("deltaTime", deltaTime_);
     nh_private.getParam("filterFlag", filterFlag_);
+    nh_private.getParam("undistorEvents", undistorEventsFlag_);
 
     loadDefinitions();
 
@@ -19,7 +20,13 @@ Events2Frames::Events2Frames(ros::NodeHandle & nh, ros::NodeHandle nh_private): 
     eventFramePub_ = it.advertise("events_frame", 1);
     eventPub_ = nh_.advertise<dvs_msgs::EventArray>("events", 1, true);
 
-    //dvsUtils::dvsUtils utils;
+    if(undistorEventsFlag_){
+      std::vector <double> theresholdParameters, Kc, Dc;
+      nh_private.getParam("K", Kc);
+      nh_private.getParam("D", Dc);
+      utils_.loadCameraCalibration(Kc,Dc);
+    }
+
 }
 
 Events2Frames::~Events2Frames(){}
@@ -160,15 +167,30 @@ void Events2Frames::eventCallback(const dvs_msgs::EventArray::ConstPtr &event_ms
 
     for (int ii = 0; ii<event_msg->events.size(); ++ii){
 
-        if(!filterFlag_){
-            updateEventFrame(event_msg->events[ii]);
-            checkEventPublishing(event_msg->events[ii], n_event, ii);
-        }
-        else{
-            if(!utils_.inEdge(event_msg->events[ii].x, event_msg->events[ii].y)){
-                updateEventFrame(event_msg->events[ii]);
-                checkEventPublishing(event_msg->events[ii], n_event, ii);
-            }
+        if(0 <= event_msg->events[ii].x && event_msg->events[ii].x < event_msg->width && 0 <= event_msg->events[ii].y && event_msg->events[ii].y < event_msg->height){
+          if(!filterFlag_){
+              updateEventFrame(event_msg->events[ii]);
+              checkEventPublishing(event_msg->events[ii], n_event, ii);
+          }
+          else{
+              if(!utils_.inEdge(event_msg->events[ii].x, event_msg->events[ii].y)){
+                  if(undistorEventsFlag_){
+                    cv::Point e = utils_.undistortEvent(event_msg->events[ii].x, event_msg->events[ii].y);
+                    if (e.x>=0 && e.y>=0){
+                      dvs_msgs::Event event;
+                      event = event_msg->events[ii];
+                      event.x = e.x;
+                      event.y = e.y;
+                      updateEventFrame(event);
+                      checkEventPublishing(event, n_event, ii);
+                    }
+                  }
+                  else{
+                    updateEventFrame(event_msg->events[ii]);
+                    checkEventPublishing(event_msg->events[ii], n_event, ii);
+                  }
+              }
+          }
         }
     }
 }

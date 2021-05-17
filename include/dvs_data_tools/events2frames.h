@@ -46,6 +46,7 @@ class Events2Frames{
 
         // Filtering options
         bool filterFlag_ = false;
+        bool undistorEventsFlag_ = false;
 
         enum visualization {BATCH = 0, NUMBEROFEVENTS = 1, TIME = 2, EXPERIMENTAL = 3};
         enum bColorList {BLACK = 0, WHITE = 1};
