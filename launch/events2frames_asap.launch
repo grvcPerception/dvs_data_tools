@@ -23,4 +23,6 @@
   	<remap from="image" to="/asap/events_frame"/>
   </node>
 
+  <node pkg="rqt_reconfigure" type="rqt_reconfigure" name="event2frames_rqt_reconfigure" args="eventFrame_node"/>
+  
 </launch>

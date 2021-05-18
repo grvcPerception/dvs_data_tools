@@ -20,4 +20,7 @@
   <node name="image_view_events" pkg="image_view" type="image_view">
   	<remap from="image" to="/dvs/events_frame"/>
   </node>
+
+  <node pkg="rqt_reconfigure" type="rqt_reconfigure" name="event2frames_rqt_reconfigure" args="eventFrame_node"/>
+
 </launch>
