@@ -77,8 +77,11 @@ namespace dvs_tools
 
           // Dynamic reconfigure
           void reconfigureCallback(dvs_data_tools::dvs_data_toolsConfig &config, uint32_t level);
-          boost::shared_ptr<dynamic_reconfigure::Server<dvs_data_tools::dvs_data_toolsConfig> > server_;
-          dynamic_reconfigure::Server<dvs_data_tools::dvs_data_toolsConfig>::CallbackType dynamic_reconfigure_callback_;
+          dynamic_reconfigure::Server<dvs_data_tools::dvs_data_toolsConfig> drServer_;
+          dynamic_reconfigure::Server<dvs_data_tools::dvs_data_toolsConfig>::CallbackType drCallback_;
+
+          // boost::shared_ptr<dynamic_reconfigure::Server<dvs_data_tools::dvs_data_toolsConfig> > server_;
+          // dynamic_reconfigure::Server<dvs_data_tools::dvs_data_toolsConfig>::CallbackType dynamic_reconfigure_callback_;
 
       public:
           Events2Frames(ros::NodeHandle & nh, ros::NodeHandle nh_private);

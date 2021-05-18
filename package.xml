@@ -3,49 +3,22 @@
   <name>dvs_data_tools</name>
   <version>0.0.0</version>
   <description>The dvs_data_tools package</description>
+  <maintainer email="jrodriguezg@us.es">Juan Pablo Rodriguez Gomez</maintainer>
 
-
-  <maintainer email="jrodriguezg@us.es">juan</maintainer>
-
-
-  <license>TODO</license>
-
-
+  <license>MIT</license>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>cv_bridge</build_depend>
-  <build_depend>dvs_msgs</build_depend>
-  <build_depend>geometry_msgs</build_depend>
-  <build_depend>image_transport</build_depend>
-  <build_depend>message_generation</build_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>rospy</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_depend>sensor_msgs</build_depend>
-  <build_depend>dynamic_reconfigure</build_depend>
+  <buildtool_depend>catkin_simple</buildtool_depend>
 
-  <build_export_depend>cv_bridge</build_export_depend>
-  <build_export_depend>dvs_msgs</build_export_depend>
-  <build_export_depend>geometry_msgs</build_export_depend>
-  <build_export_depend>image_transport</build_export_depend>
-  <build_export_depend>roscpp</build_export_depend>
-  <build_export_depend>rospy</build_export_depend>
-  <build_export_depend>std_msgs</build_export_depend>
-  <build_export_depend>sensor_msgs</build_export_depend>
+  <depend>roscpp</depend>
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>dvs_msgs</depend>
+  <depend>cv_bridge</depend>
+  <depend>image_transport</depend>
+  <depend>dynamic_reconfigure</depend>
 
-  <exec_depend>cv_bridge</exec_depend>
-  <exec_depend>dvs_msgs</exec_depend>
-  <exec_depend>geometry_msgs</exec_depend>
-  <exec_depend>image_transport</exec_depend>
-  <exec_depend>roscpp</exec_depend>
-  <exec_depend>rospy</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
-  <exec_depend>sensor_msgs</exec_depend>
-
-
-  <!-- The export tag contains other, unspecified, tags -->
   <export>
-    <!-- Other tools can request additional information be placed here -->
-
   </export>
+  
 </package>

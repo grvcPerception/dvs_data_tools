@@ -30,10 +30,8 @@ namespace dvs_tools
       }
 
       // dynamic reconfigure
-      dynamic_reconfigure_callback_ = boost::bind(&Events2Frames::reconfigureCallback, this, _1, _2);
-      server_.reset(new dynamic_reconfigure::Server<dvs_data_tools::dvs_data_toolsConfig>(nh_private));
-      server_->setCallback(dynamic_reconfigure_callback_);
-
+      drCallback_ = boost::bind(&Events2Frames::reconfigureCallback, this, _1, _2);
+      drServer_.setCallback(drCallback_);
   }
 
   Events2Frames::~Events2Frames(){}
@@ -165,9 +163,18 @@ namespace dvs_tools
   }
 
   void Events2Frames::reconfigureCallback(dvs_data_tools::dvs_data_toolsConfig &config, uint32_t level){
-    //std::cout<<"Current paramters ..... undistorEvents: "<<config.undistorEvents<<" filterFlag: "<<config.filterFlag<<std::endl;
+    ROS_INFO("Reconfigure Request: %s %s %s %d %d %f",
+            config.visualization.c_str(),
+            config.undistorEvents?"True":"False",
+            config.filterFlag?"True":"False",
+            nEventsFrame_ = config.nEventsFrame, config.nEvents,config.deltaTime);
+
+    visualizationType_ = config.visualization.c_str();
     undistorEventsFlag_ = config.undistorEvents;
     filterFlag_ = config.filterFlag;
+    nEventsFrame_ = config.nEventsFrame;
+    nEvents_ = config.nEvents;
+    deltaTime_ = config.deltaTime;
   }
 
   void Events2Frames::eventCallback(const dvs_msgs::EventArray::ConstPtr &event_msg){
