@@ -33,7 +33,7 @@ def main():
     cwd = os.getcwd()
     print("The text files will be saved in:"+cwd)
 
-    writer_events = csv.writer(open(cwd+"/Events_"+date_id+".csv", 'w'), delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    writer_events = csv.writer(open(cwd+"/Events_"+date_id+".txt", 'w'), delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
     
     subscriber=rospy.Subscriber('/dvs/events', EventArray, EventsCallback, queue_size=1)
 
