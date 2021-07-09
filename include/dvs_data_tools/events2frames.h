@@ -50,6 +50,11 @@ namespace dvs_tools
           // Filtering options
           bool filterFlag_ = false;
           bool undistorEventsFlag_ = false;
+          bool rotateEventsFlag_ = false;
+
+          // gamma
+          bool gammaActivated_ = false;
+          double gamma_ = 1.0;
 
           enum visualization {BATCH = 0, NUMBEROFEVENTS = 1, TIME = 2, EXPERIMENTAL = 3};
           enum bColorList {BLACK = 0, WHITE = 1};

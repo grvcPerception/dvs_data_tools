@@ -12,6 +12,9 @@ namespace dvs_tools
       nh_private.getParam("deltaTime", deltaTime_);
       nh_private.getParam("filterFlag", filterFlag_);
       nh_private.getParam("undistorEvents", undistorEventsFlag_);
+      nh_private.getParam("rotateEvents", rotateEventsFlag_);
+      nh_private.getParam("gammaActivated",gammaActivated_);
+      nh_private.getParam("gamma",gamma_);
 
       loadDefinitions();
 
@@ -163,18 +166,22 @@ namespace dvs_tools
   }
 
   void Events2Frames::reconfigureCallback(dvs_data_tools::dvs_data_toolsConfig &config, uint32_t level){
-    ROS_INFO("Reconfigure Request: %s %s %s %d %d %f",
-            config.visualization.c_str(),
-            config.undistorEvents?"True":"False",
-            config.filterFlag?"True":"False",
-            nEventsFrame_ = config.nEventsFrame, config.nEvents,config.deltaTime);
+    ROS_INFO("Reconfigure Request");
+    // ROS_INFO("Reconfigure Request: %s %s %s %d %d %f",
+    //         config.visualization.c_str(),
+    //         config.undistorEvents?"True":"False",
+    //         config.filterFlag?"True":"False",
+    //         nEventsFrame_ = config.nEventsFrame, config.nEvents,config.deltaTime);
 
     visualizationType_ = config.visualization.c_str();
     undistorEventsFlag_ = config.undistorEvents;
+    rotateEventsFlag_ = config.rotateEvents;
     filterFlag_ = config.filterFlag;
     nEventsFrame_ = config.nEventsFrame;
     nEvents_ = config.nEvents;
     deltaTime_ = config.deltaTime;
+    gammaActivated_ = config.gammaActivated;
+    gamma_ = config.gamma;
   }
 
   void Events2Frames::eventCallback(const dvs_msgs::EventArray::ConstPtr &event_msg){
@@ -190,7 +197,20 @@ namespace dvs_tools
             updateTimeReference(event_msg->events[0].ts.toSec());
       }
 
+      int step, currentStep = 0;
+      if (gammaActivated_){
+        double gamma_events = n_event*gamma_;
+        step = floor(n_event/gamma_events);
+      }
+
       for (int ii = 0; ii<event_msg->events.size(); ++ii){
+          if(gammaActivated_){
+            if(ii == currentStep)
+              currentStep += step;
+            else
+              continue;
+          }
+
           // Check space condition
           if(0 <= event_msg->events[ii].x && event_msg->events[ii].x < event_msg->width && 0 <= event_msg->events[ii].y && event_msg->events[ii].y < event_msg->height){
             bool valid_event = updateEventFrame(event_msg->events[ii]);
@@ -221,6 +241,11 @@ namespace dvs_tools
         }
         else
           return false;
+      }
+
+      if (rotateEventsFlag_){
+        event.x = sensorWidth_ - 1 - event.x;
+        event.y = sensorHeight_ - 1 - event.y;
       }
 
       // Accumulate events to display
