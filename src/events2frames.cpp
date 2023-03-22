@@ -19,7 +19,7 @@ namespace dvs_tools
       loadDefinitions();
 
       // Subscribers
-      event_sub_ = nh_.subscribe("events_topic", 10, &Events2Frames::eventCallback, this);
+      event_sub_ = nh_.subscribe("events_topic", 0, &Events2Frames::eventCallback, this);
       // Publishers
       image_transport::ImageTransport it(nh_);
       eventFramePub_ = it.advertise("events_frame", 1);
