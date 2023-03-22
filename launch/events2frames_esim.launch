@@ -1,0 +1,26 @@
+<launch>
+  <!-- rosbag player-->
+  <!--node pkg="rosbag" type="play" name="player" args="/media/juan/Disk1/juan/Dataset/uzg-rpg/events/EventCameraDataset/shapes_6dof.bag"/-->
+
+  <!-- event visualization -->
+  <node name="eventFrame_node" pkg="dvs_data_tools" type="eventFrame_node" output="screen">
+    <remap from="events_topic" to="/cam0/events"/>
+    <remap from="events_frame" to="/davis/events_frame"/>
+    <remap from="events" to="/dvs/events_hf"/>
+    <param name="visualization" value="experimental"/>
+    <param name="displayType" value="red-blue"/>
+    <param name="backgroundColor" value="white"/>
+    <param name="nEventsFrame" value="2000"/>
+    <param name="nEvents" value="400"/>
+    <param name="deltaTime" value="0.025"/>
+    <!-- Activate for EyeBird -->
+    <param name="filterFlag" value="False"/>
+  </node>
+
+  <node name="image_view_events" pkg="image_view" type="image_view">
+  	<remap from="image" to="/davis/events_frame"/>
+  </node>
+
+  <node pkg="rqt_reconfigure" type="rqt_reconfigure" name="event2frames_rqt_reconfigure" args="eventFrame_node"/>
+
+</launch>
