@@ -20,6 +20,15 @@ target_link_libraries(eventFrame_node
    ${OpenCV_LIBRARIES}
 )
 
+cs_add_executable(timeSurfaceTester_node
+  src/time_surface_tester.cpp
+  src/time_surface.cpp
+)
+target_link_libraries(timeSurfaceTester_node
+   ${catkin_LIBRARIES}
+   ${OpenCV_LIBRARIES}
+)
+
 cs_add_executable(stereoTest_node src/stereo_test.cpp)
 target_link_libraries(stereoTest_node
    ${catkin_LIBRARIES}

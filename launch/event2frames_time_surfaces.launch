@@ -1,0 +1,17 @@
+<launch>
+  <node name="time_surface_tester" pkg="dvs_data_tools" type="timeSurfaceTester_node" output="screen">
+
+    <remap from="events_topic" to="/davis/events" />
+    <remap from="time_surface" to="/time_surfaces/image_raw" />
+
+    <!-- Time surfaces parameters  -->
+    <param name="time_constant" value="0.25"/>
+
+    <!-- Visualization parameters  -->
+    <param name="accumulation_type" value="time"/>
+    <param name="accumulation_time" value="0.25"/>
+    <param name="number_of_accumulated_events" value="5000"/>
+
+  </node>
+
+</launch>
